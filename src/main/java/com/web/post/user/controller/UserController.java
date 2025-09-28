@@ -1,6 +1,7 @@
 package com.web.post.user.controller;
 
 
+import com.web.post.global.dto.LoginUser;
 import com.web.post.user.domain.User;
 import com.web.post.user.dto.request.UserInsertRequest;
 import com.web.post.user.dto.request.UserLoginRequest;
@@ -20,10 +21,9 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("")
-    public User getUser(){
-        User user = userService.getUser();
-       return  user;
+    @GetMapping("/me")
+    public ResponseEntity<User> getUser(@LoginUser User user){
+       return  ResponseEntity.ok(user);
     }
 
     @PostMapping("")

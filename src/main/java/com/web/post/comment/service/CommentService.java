@@ -9,6 +9,7 @@ import com.web.post.post.repository.PostRepository;
 import com.web.post.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +22,9 @@ public class CommentService {
     private final PostRepository postRepository;
 
 
+    @Transactional(readOnly = true)
     public List<CommentDto> getComments(Long postId) {
-        List<Comment> CommentList = commentRepository.findByPostId(postId);
+        List<Comment> CommentList = commentRepository.findThreadedByPostId(postId);
         List<CommentDto> commentDtoList = new ArrayList<>();
         for (Comment comment : CommentList) {
             CommentDto dto = new CommentDto(comment);
@@ -31,6 +33,7 @@ public class CommentService {
         return commentDtoList;
     }
 
+    @Transactional
     public CommentDto insertComment(Long postId, User loginUser, CommentInsertRequest request) {
         Comment comment = new Comment();
         comment.setAuthor(loginUser);
@@ -40,7 +43,7 @@ public class CommentService {
         if (request.getParentId()!=null){
             Comment parentComment = commentRepository.findById(request.getParentId()).orElseThrow(()->new IllegalArgumentException("대상 댓글이 없습니다."));
             comment.setParent(parentComment);
-            comment.setPosition(commentRepository.findPosition(parentComment.getId()));
+            comment.setPosition(commentRepository.findPosition(request.getParentId()));
         }
         return new CommentDto(commentRepository.save(comment));
     }

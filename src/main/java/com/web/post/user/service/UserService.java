@@ -10,6 +10,7 @@ import com.web.post.user.dto.response.UserSignupResponse;
 import com.web.post.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -22,11 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RedisLoginTokenService redisLoginTokenService;
 
-    public User getUser() {
-        User user = userRepository.findById(1L).get();
-        return user;
-    }
-
+    @Transactional
     public UserSignupResponse insertUser(UserInsertRequest request) {
         if(userRepository.existsByUsername(request.getUsername())){
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
@@ -42,6 +39,7 @@ public class UserService {
         return new UserSignupResponse(insertUser.getUsername(), insertUser.getEmail());
     }
 
+    @Transactional
     public UserLoginResult login(UserLoginRequest request) {
         User targetUser = userRepository.findByUsername(request.getUsername()).orElseThrow(() ->new IllegalArgumentException("존재하지 않는 유저 입니다."));
         String hashedPassword = targetUser.getPasswordHash();

@@ -13,6 +13,7 @@ public class CommentDto {
     Integer position;
     String author;
     String content;
+    Integer likeCount;
     LocalDateTime createdAt;
     public CommentDto(Comment comment) {
         this.id = comment.getId();
@@ -23,6 +24,7 @@ public class CommentDto {
         this.position = comment.getPosition();
         this.author = comment.getAuthor().getUsername();
         this.content = comment.getContent();
+        this.likeCount = comment.getLikeCount();
         this.createdAt = comment.getCreatedAt();
     }
 }

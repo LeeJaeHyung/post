@@ -20,7 +20,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id", columnDefinition = "BIGINT UNSIGNED")
+    @Column(name = "comment_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -42,8 +42,11 @@ public class Comment {
     @Column(nullable = false)
     private String content;
 
-    @Column
-    private Integer position;
+    @Column(nullable = false)
+    private Integer position = 0;
+
+    @Column(name = "like_count", nullable = false)
+    private Integer likeCount = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

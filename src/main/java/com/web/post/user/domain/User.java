@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
+    @Column(name="user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id", columnDefinition = "BIGINT UNSIGNED")
     private Long id;
 
     @Column(nullable = false, length = 30)
