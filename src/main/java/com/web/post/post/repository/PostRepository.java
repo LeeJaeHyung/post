@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 public interface PostRepository extends JpaRepository<Post,Long> {
     @Modifying
     @Transactional
@@ -17,4 +19,6 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("update Post p set p.likeCount = CASE WHEN p.likeCount > 0 THEN p.likeCount - 1 ELSE 0 END " +
             "where p.id = :postId")
     int decLikeCount(@Param("postId") Long postId);
+
+    Optional<Post> findByIdAndAuthorId(Long postId, Long authorId);
 }

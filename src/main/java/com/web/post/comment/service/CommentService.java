@@ -3,6 +3,7 @@ package com.web.post.comment.service;
 import com.web.post.comment.domain.Comment;
 import com.web.post.comment.dto.CommentDto;
 import com.web.post.comment.dto.CommentInsertRequest;
+import com.web.post.comment.dto.CommentUpdateRequest;
 import com.web.post.comment.repository.CommentRepository;
 import com.web.post.post.domain.Post;
 import com.web.post.post.repository.PostRepository;
@@ -45,6 +46,20 @@ public class CommentService {
             comment.setParent(parentComment);
             comment.setPosition(commentRepository.findPosition(request.getParentId()));
         }
+        return new CommentDto(commentRepository.save(comment));
+    }
+
+    @Transactional
+    public CommentDto updateComment(Long postId, Long commentId, Long loginUserId, CommentUpdateRequest request) {
+        Comment comment = commentRepository.findByIdAndPostIdAndAuthorId(commentId,postId,loginUserId).orElseThrow(()-> new IllegalArgumentException("댓글에 접근 권한이 없습니다."));
+        comment.setContent(request.getComment());
+        return new CommentDto(commentRepository.save(comment));
+    }
+
+    @Transactional
+    public CommentDto deleteComment(Long postId, Long commentId, Long loginUserId) {
+        Comment comment = commentRepository.findByIdAndPostIdAndAuthorId(commentId,postId,loginUserId).orElseThrow(()-> new IllegalArgumentException("댓글에 접근 권한이 없습니다."));
+        comment.setCreatedAt(null);
         return new CommentDto(commentRepository.save(comment));
     }
 }

@@ -8,60 +8,65 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface CommentRepository extends JpaRepository<Comment,Long> {
+public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Query(value = """
-WITH RECURSIVE r AS (
-  -- 1) 루트 댓글
-  SELECT
-      c.comment_id,
-      c.post_id,
-      c.parent_id,
-      c.author_id,
-      c.content,
-      COALESCE(c.position, 0) AS position,
-      c.created_at,
-      c.created_at AS root_created_at,
-      CAST(LPAD(COALESCE(c.position, 0), 6, '0') AS CHAR(1024)) AS sort_path,
-      COALESCE(c.like_count, 0) AS like_count
-  FROM comments c
-  WHERE c.post_id = :postId
-    AND c.parent_id IS NULL
+            WITH RECURSIVE r AS (
+              -- 1) 루트 댓글
+              SELECT
+                  c.comment_id,
+                  c.post_id,
+                  c.parent_id,
+                  c.author_id,
+                  c.content,
+                  COALESCE(c.position, 0) AS position,
+                  c.created_at,
+                  c.updated_at,
+                  c.created_at AS root_created_at,
+                  CAST(LPAD(COALESCE(c.position, 0), 6, '0') AS CHAR(1024)) AS sort_path,
+                  COALESCE(c.like_count, 0) AS like_count
+              FROM comments c
+              WHERE c.post_id = :postId
+                AND c.parent_id IS NULL
+                AND c.created_at IS NOT NULL  -- null 제외
 
-  UNION ALL
+              UNION ALL
 
-  -- 2) 자식 댓글
-  SELECT
-      ch.comment_id,
-      ch.post_id,
-      ch.parent_id,
-      ch.author_id,
-      ch.content,
-      COALESCE(ch.position, 0) AS position,
-      ch.created_at,
-      r.root_created_at,
-      CAST(CONCAT(r.sort_path, '.', LPAD(COALESCE(ch.position, 0), 6, '0')) AS CHAR(1024)) AS sort_path,
-      COALESCE(ch.like_count, 0) AS like_count
-  FROM comments ch
-  JOIN r ON ch.parent_id = r.comment_id
-)
-SELECT
-    comment_id, post_id, parent_id, author_id, content, position, created_at, like_count
-FROM r
-ORDER BY
-    root_created_at ASC,  -- 최상위 댓글 묶음 순서
-    sort_path ASC,        -- 대댓글 경로 순서
-    created_at ASC        -- 타이브레이커
-""", nativeQuery = true)
+              -- 2) 자식 댓글
+              SELECT
+                  ch.comment_id,
+                  ch.post_id,
+                  ch.parent_id,
+                  ch.author_id,
+                  ch.content,
+                  COALESCE(ch.position, 0) AS position,
+                  ch.created_at,
+                  ch.updated_at,
+                  r.root_created_at,
+                  CAST(CONCAT(r.sort_path, '.', LPAD(COALESCE(ch.position, 0), 6, '0')) AS CHAR(1024)) AS sort_path,
+                  COALESCE(ch.like_count, 0) AS like_count
+              FROM comments ch
+              JOIN r ON ch.parent_id = r.comment_id
+              WHERE ch.created_at IS NOT NULL  -- null 제외
+            )
+            SELECT
+                comment_id, post_id, parent_id, author_id, content, position, created_at, updated_at, like_count
+            FROM r
+            ORDER BY
+                root_created_at ASC,   -- 최상위 댓글 묶음 순서
+                sort_path ASC,         -- 트리 경로 순서
+                created_at ASC         -- 타이브레이커
+            """, nativeQuery = true)
     List<Comment> findThreadedByPostId(@Param("postId") Long postId);
 
 
     @Query(value = """
-        SELECT IFNULL(MAX(c.position), 0) + 1
-        FROM comments c
-        WHERE c.parent_id = :parentId
-    """, nativeQuery = true)
+                SELECT IFNULL(MAX(c.position), 0) + 1
+                FROM comments c
+                WHERE c.parent_id = :parentId
+            """, nativeQuery = true)
     int findPosition(@Param("parentId") Long parentId);
 
 
@@ -70,10 +75,18 @@ ORDER BY
     @Query("update Comment c set c.likeCount = c.likeCount + 1 where c.id = :commentId")
     int incLikeCount(@Param("commentId") Long commentId);
 
-    @Modifying @Transactional
+    @Modifying
+    @Transactional
     @Query("update Comment c set c.likeCount = CASE WHEN c.likeCount > 0 THEN c.likeCount - 1 ELSE 0 END " +
             "where c.id = :commentId")
     int decLikeCount(@Param("commentId") Long commentId);
 
     boolean existsByPost_IdAndId(Long postId, Long commentId);
+
+    @Modifying
+    @Query("update Comment c set c.createdAt = null where c.post.id = :postId")
+    int softDeleteByPostId(@Param("postId") Long postId);
+
+    Optional<Comment> findByIdAndPostIdAndAuthorId(Long id, Long postId, Long authorId);
+
 }

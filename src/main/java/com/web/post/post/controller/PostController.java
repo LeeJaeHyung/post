@@ -1,10 +1,7 @@
 package com.web.post.post.controller;
 
-import ch.qos.logback.core.model.Model;
 import com.web.post.global.dto.LoginUser;
-import com.web.post.post.dto.PostInsertRequest;
-import com.web.post.post.dto.PostInsertResponse;
-import com.web.post.post.dto.PostListResponse;
+import com.web.post.post.dto.*;
 import com.web.post.post.service.PostService;
 import com.web.post.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +26,16 @@ public class PostController {
     @ResponseBody
     public ResponseEntity<PostInsertResponse> insertPost(@LoginUser User loginUser, @RequestBody PostInsertRequest request){
         return ResponseEntity.ok(postService.insertPost(loginUser,request));
+    }
+
+    @PutMapping("/{postId}")
+    public ResponseEntity<PostDto> updatePost(@LoginUser User loginUser, @PathVariable Long postId, @RequestBody PostUpdateRequest request){
+        return ResponseEntity.ok(postService.updatePost(loginUser.getId(), postId, request));
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<PostDto> deletePost(@LoginUser User loginUser, @PathVariable Long postId){
+        return ResponseEntity.ok(postService.delete(loginUser.getId(), postId));
     }
 
 

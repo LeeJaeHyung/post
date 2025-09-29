@@ -5,9 +5,11 @@ import com.web.post.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
-
+@Where(clause = "created_at is not null")
 @Entity
 @Table(name = "comments",
         indexes = {
@@ -49,6 +51,10 @@ public class Comment {
     private Integer likeCount = 0;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }

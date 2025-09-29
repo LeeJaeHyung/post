@@ -2,6 +2,7 @@ package com.web.post.comment.controller;
 
 import com.web.post.comment.dto.CommentDto;
 import com.web.post.comment.dto.CommentInsertRequest;
+import com.web.post.comment.dto.CommentUpdateRequest;
 import com.web.post.comment.service.CommentService;
 import com.web.post.global.dto.LoginUser;
 import com.web.post.user.domain.User;
@@ -31,5 +32,17 @@ public class CommentController {
         CommentDto dto = commentService.insertComment(postId, loginUser, request);
         return ResponseEntity.ok(dto);
     }
+
+    @PutMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<CommentDto> updateComment(@PathVariable Long postId, @PathVariable Long commentId, @LoginUser User loginUser, @RequestBody CommentUpdateRequest request){
+        return ResponseEntity.ok(commentService.updateComment(postId, commentId, loginUser.getId(),request));
+    }
+
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<CommentDto> deleteComment(@PathVariable Long postId, @PathVariable Long commentId, @LoginUser User loginUser){
+        return ResponseEntity.ok(commentService.deleteComment(postId, commentId, loginUser.getId()));
+    }
+
+
 
 }

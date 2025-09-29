@@ -5,9 +5,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
+@Where(clause = "created_at is not null")
 @Entity
 @Table(name = "posts",
         indexes = {
@@ -48,7 +50,7 @@ public class Post {
     private Integer viewCount = 0;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
