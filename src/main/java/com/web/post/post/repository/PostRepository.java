@@ -20,5 +20,18 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             "where p.id = :postId")
     int decLikeCount(@Param("postId") Long postId);
 
+    @Modifying
+    @Query("""
+        UPDATE Post p
+        SET p.commentCount = (
+            SELECT COUNT(c)
+            FROM Comment c
+            WHERE c.post = p
+        )
+        WHERE p.id = :postId
+    """)
+    int updateCommentCount(@Param("postId") Long postId);
+
     Optional<Post> findByIdAndAuthorId(Long postId, Long authorId);
+
 }

@@ -46,7 +46,9 @@ public class CommentService {
             comment.setParent(parentComment);
             comment.setPosition(commentRepository.findPosition(request.getParentId()));
         }
-        return new CommentDto(commentRepository.save(comment));
+        CommentDto commentDto = new CommentDto(commentRepository.save(comment));
+        postRepository.updateCommentCount(postId);
+        return commentDto;
     }
 
     @Transactional
@@ -60,6 +62,8 @@ public class CommentService {
     public CommentDto deleteComment(Long postId, Long commentId, Long loginUserId) {
         Comment comment = commentRepository.findByIdAndPostIdAndAuthorId(commentId,postId,loginUserId).orElseThrow(()-> new IllegalArgumentException("댓글에 접근 권한이 없습니다."));
         comment.setCreatedAt(null);
-        return new CommentDto(commentRepository.save(comment));
+        CommentDto commentDto = new CommentDto(commentRepository.save(comment));
+        postRepository.updateCommentCount(postId);
+        return commentDto;
     }
 }
